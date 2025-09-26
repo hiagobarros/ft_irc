@@ -1,8 +1,8 @@
 #include "Client.hpp"
 
-    Client::Client() : _fd(-1), _passwordCorrect(false) {}
+    Client::Client() : _fd(-1), _passwordCorrect(false), _isRegistered(false) {}
 
-    Client::Client(int fd) : _fd(fd), _passwordCorrect(false) {}
+    Client::Client(int fd) : _fd(fd), _passwordCorrect(false), _isRegistered(false) {}
 
     Client::~Client() {}
 

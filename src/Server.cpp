@@ -49,6 +49,7 @@ void Server::setup()
     struct pollfd server_pollfd;
     server_pollfd.fd = _server_fd;
     server_pollfd.events = POLLIN;
+    server_pollfd.revents = 0;
     _fds.push_back(server_pollfd);
 
     std::cout<<"Server listening on PORT: "<<_port<<std::endl;
@@ -95,6 +96,7 @@ void Server::acceptNewClient()
     struct pollfd new_pollfd;
     new_pollfd.fd = new_client_fd;
     new_pollfd.events = POLLIN;
+    new_pollfd.revents = 0;
     _fds.push_back(new_pollfd);
 
     _clients.insert(std::make_pair(new_client_fd, Client(new_client_fd)));

@@ -10,6 +10,7 @@
 #include <string>
 #include <istream>
 #include <sstream>
+#include <cstring>
 ////////????
 
 Bot::Bot(const std::string& host, int port, const std::string& password) :

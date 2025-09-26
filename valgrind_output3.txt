@@ -1,0 +1,15 @@
+==44949== Memcheck, a memory error detector
+==44949== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==44949== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==44949== Command: ./ircserv 6667 pass
+==44949== 
+DEBUG: socket() created successfully. fd = 3
+Server listening on PORT: 6667
+New IP connection: 127.0.0.1 at PORT: 42378 | FD: 4
+DEBUG: Received from FD 4: PASS pass
+INFO: Client 4 provided correct password.
+DEBUG: Received from FD 4: NICK testuser
+INFO: Client 4 set nickname to testuser
+DEBUG: Received from FD 4: USER testuser 0 * :testuser
+INFO: Client 4 set username to testuser
+INFO: Client testuser (FD: 4) was registered successfully.
