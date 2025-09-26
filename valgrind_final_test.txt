@@ -1,0 +1,83 @@
+==47316== Memcheck, a memory error detector
+==47316== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==47316== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==47316== Command: ./ircserv 6667 pass
+==47316== 
+DEBUG: socket() created successfully. fd = 3
+Server listening on PORT: 6667
+New IP connection: 127.0.0.1 at PORT: 34954 | FD: 4
+DEBUG: Received from FD 4: PASS pass
+INFO: Client 4 provided correct password.
+DEBUG: Received from FD 4: NICK alice
+INFO: Client 4 set nickname to alice
+DEBUG: Received from FD 4: USER alice 0 * :alice
+INFO: Client 4 set username to alice
+INFO: Client alice (FD: 4) was registered successfully.
+DEBUG: Received from FD 4: JOIN #general
+INFO: Channel #general created.
+INFO: Client alice joined channel #general
+DEBUG: Received from FD 4: PRIVMSG #general :Hello everyone!
+DEBUG: Received from FD 4: QUIT
+INFO: alice (FD: 4) is leaving. (Client Quit)
+==47316== Invalid read of size 8
+==47316==    at 0x49B93E4: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::find(char const*, unsigned long, unsigned long) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==47316==    by 0x10D2F3: Server::processClientBuffer(int) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10D144: Server::handleClientData(int) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10CC2B: Server::run() (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10BE14: main (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==  Address 0x4ddede0 is 128 bytes inside a block of size 160 free'd
+==47316==    at 0x484BB6F: operator delete(void*, unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==47316==    by 0x1182AB: __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, Client> > >::deallocate(std::_Rb_tree_node<std::pair<int const, Client> >*, unsigned long) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x117C32: std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, Client> > > >::deallocate(std::allocator<std::_Rb_tree_node<std::pair<int const, Client> > >&, std::_Rb_tree_node<std::pair<int const, Client> >*, unsigned long) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x116F0E: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_put_node(std::_Rb_tree_node<std::pair<int const, Client> >*) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x1157BB: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_drop_node(std::_Rb_tree_node<std::pair<int const, Client> >*) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x114490: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_erase(std::_Rb_tree_node<std::pair<int const, Client> >*) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x117A43: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::clear() (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x116D1A: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_erase_aux(std::_Rb_tree_const_iterator<std::pair<int const, Client> >, std::_Rb_tree_const_iterator<std::pair<int const, Client> >) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x11546A: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::erase(int const&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x1140D6: std::map<int, Client, std::less<int>, std::allocator<std::pair<int const, Client> > >::erase(int const&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x112981: Server::removeClient(int) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10DF54: Server::executeCommand(int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==  Block was alloc'd at
+==47316==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==47316==    by 0x11845B: __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, Client> > >::allocate(unsigned long, void const*) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x117E2F: std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, Client> > > >::allocate(std::allocator<std::_Rb_tree_node<std::pair<int const, Client> > >&, unsigned long) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x117084: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_get_node() (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x115BB5: std::_Rb_tree_node<std::pair<int const, Client> >* std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_create_node<std::pair<int, Client> >(std::pair<int, Client>&&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x114AAD: std::pair<std::_Rb_tree_iterator<std::pair<int const, Client> >, bool> std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_emplace_unique<std::pair<int, Client> >(std::pair<int, Client>&&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x1139ED: std::enable_if<std::is_constructible<std::pair<int const, Client>, std::pair<int, Client> >::value, std::pair<std::_Rb_tree_iterator<std::pair<int const, Client> >, bool> >::type std::map<int, Client, std::less<int>, std::allocator<std::pair<int const, Client> > >::insert<std::pair<int, Client> >(std::pair<int, Client>&&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10CD88: Server::acceptNewClient() (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10CB62: Server::run() (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10BE14: main (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316== 
+==47316== Invalid read of size 8
+==47316==    at 0x49B93E4: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::find(char const*, unsigned long, unsigned long) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==47316==    by 0x10D319: Server::processClientBuffer(int) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10D144: Server::handleClientData(int) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10CC2B: Server::run() (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10BE14: main (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==  Address 0x4ddede0 is 128 bytes inside a block of size 160 free'd
+==47316==    at 0x484BB6F: operator delete(void*, unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==47316==    by 0x1182AB: __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, Client> > >::deallocate(std::_Rb_tree_node<std::pair<int const, Client> >*, unsigned long) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x117C32: std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, Client> > > >::deallocate(std::allocator<std::_Rb_tree_node<std::pair<int const, Client> > >&, std::_Rb_tree_node<std::pair<int const, Client> >*, unsigned long) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x116F0E: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_put_node(std::_Rb_tree_node<std::pair<int const, Client> >*) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x1157BB: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_drop_node(std::_Rb_tree_node<std::pair<int const, Client> >*) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x114490: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_erase(std::_Rb_tree_node<std::pair<int const, Client> >*) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x117A43: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::clear() (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x116D1A: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_erase_aux(std::_Rb_tree_const_iterator<std::pair<int const, Client> >, std::_Rb_tree_const_iterator<std::pair<int const, Client> >) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x11546A: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::erase(int const&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x1140D6: std::map<int, Client, std::less<int>, std::allocator<std::pair<int const, Client> > >::erase(int const&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x112981: Server::removeClient(int) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10DF54: Server::executeCommand(int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==  Block was alloc'd at
+==47316==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==47316==    by 0x11845B: __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, Client> > >::allocate(unsigned long, void const*) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x117E2F: std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, Client> > > >::allocate(std::allocator<std::_Rb_tree_node<std::pair<int const, Client> > >&, unsigned long) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x117084: std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_get_node() (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x115BB5: std::_Rb_tree_node<std::pair<int const, Client> >* std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_create_node<std::pair<int, Client> >(std::pair<int, Client>&&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x114AAD: std::pair<std::_Rb_tree_iterator<std::pair<int const, Client> >, bool> std::_Rb_tree<int, std::pair<int const, Client>, std::_Select1st<std::pair<int const, Client> >, std::less<int>, std::allocator<std::pair<int const, Client> > >::_M_emplace_unique<std::pair<int, Client> >(std::pair<int, Client>&&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x1139ED: std::enable_if<std::is_constructible<std::pair<int const, Client>, std::pair<int, Client> >::value, std::pair<std::_Rb_tree_iterator<std::pair<int const, Client> >, bool> >::type std::map<int, Client, std::less<int>, std::allocator<std::pair<int const, Client> > >::insert<std::pair<int, Client> >(std::pair<int, Client>&&) (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10CD88: Server::acceptNewClient() (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10CB62: Server::run() (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316==    by 0x10BE14: main (in /home/joaovbrol/Documents/ftirc/ircserv)
+==47316== 

@@ -74,7 +74,10 @@ void Server::run() {
         // Element at index 0 is the server, which is never removed here.
         for (size_t i = _fds.size() - 1; i > 0; --i) {
             if (_fds[i].revents & POLLIN) {
-                handleClientData(_fds[i].fd);
+                // CRITICAL FIX: Check if client still exists before processing
+                if (_clients.find(_fds[i].fd) != _clients.end()) {
+                    handleClientData(_fds[i].fd);
+                }
             }
         }
     }
@@ -109,6 +112,11 @@ void Server::acceptNewClient()
 
 
 void Server::handleClientData(int client_fd) {
+    // CRITICAL FIX: Check if client still exists before processing
+    if (_clients.find(client_fd) == _clients.end()) {
+        return; // Client was already removed, skip processing
+    }
+    
     char temp_buffer[1024] = {0};
     int bytes_read = recv(client_fd, temp_buffer, 1024, 0);
 
@@ -119,31 +127,52 @@ void Server::handleClientData(int client_fd) {
             std::cerr << "Recv error for FD " << client_fd << ": " << strerror(errno) << std::endl;
         removeClient(client_fd);
     } else {
-        // Get client buffer and append new data
-        _clients[client_fd].getBuffer().append(temp_buffer, bytes_read);
-        // Now process buffer to see if we have complete commands
-        processClientBuffer(client_fd);
+        // CRITICAL FIX: Check again before accessing client data
+        if (_clients.find(client_fd) != _clients.end()) {
+            // Get client buffer and append new data
+            _clients[client_fd].getBuffer().append(temp_buffer, bytes_read);
+            // Now process buffer to see if we have complete commands
+            processClientBuffer(client_fd);
+        }
     }
 }
 
 void Server::processClientBuffer(int client_fd) {
-    // Get a reference to client buffer for convenience
-    std::string& buffer = _clients[client_fd].getBuffer();
+    // CRITICAL FIX: Check if client still exists before processing
+    if (_clients.find(client_fd) == _clients.end()) {
+        return; // Client was already removed, skip processing
+    }
+    
+    // CRITICAL FIX: Make a copy of the buffer to avoid use-after-free
+    std::string buffer_copy = _clients[client_fd].getBuffer();
+    
+    // Clear the original buffer to avoid processing the same data twice
+    _clients[client_fd].getBuffer().clear();
     
     // An IRC command ends with "\r\n". We look for this.
     size_t pos = 0;
-    while ((pos = buffer.find("\r\n")) != std::string::npos || (pos = buffer.find("\n")) != std::string::npos) {//???<\r\n>
+    while ((pos = buffer_copy.find("\r\n")) != std::string::npos || (pos = buffer_copy.find("\n")) != std::string::npos) {//???<\r\n>
+        // CRITICAL FIX: Check if client still exists before processing each command
+        if (_clients.find(client_fd) == _clients.end()) {
+            return; // Client was removed, stop processing
+        }
+        
         // Extract command line
-        std::string command_line = buffer.substr(0, pos);
-        // Remove command line (and \r\n) from buffer
-        if((pos = buffer.find("\r\n")) != std::string::npos)
-            buffer.erase(0, pos + 2);//???
-        else if((pos = buffer.find("\n")) != std::string::npos)
-            buffer.erase(0, pos + 1);//???/
+        std::string command_line = buffer_copy.substr(0, pos);
+        // Remove command line (and \r\n) from buffer_copy
+        if((pos = buffer_copy.find("\r\n")) != std::string::npos)
+            buffer_copy.erase(0, pos + 2);//???
+        else if((pos = buffer_copy.find("\n")) != std::string::npos)
+            buffer_copy.erase(0, pos + 1);//???/
         // If line is not empty, execute it
         if (!command_line.empty()) {
             executeCommand(client_fd, command_line);
         }
+    }
+    
+    // CRITICAL FIX: If client still exists, put back any remaining data
+    if (_clients.find(client_fd) != _clients.end()) {
+        _clients[client_fd].getBuffer() = buffer_copy;
     }
 }
 
