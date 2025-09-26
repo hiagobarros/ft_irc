@@ -1,0 +1,7 @@
+==62344== Memcheck, a memory error detector
+==62344== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==62344== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==62344== Command: ./ircserv 6675 password
+==62344== 
+DEBUG: socket() created successfully. fd = 3
+Server listening on PORT: 6675

@@ -159,7 +159,7 @@ void Bot::handleCommand(const std::string& channel, const std::string& full_comm
 
     // *********** basic commands **********
     if (command == "help") {
-        sendMessage("PRIVMSG " + channel + " :Hi! I am the Bot. Commands: !help, !joke, !hour, !dado [sides], !google [search], !quiz, !resposta [your_answer]");
+        sendMessage("PRIVMSG " + channel + " :Hi! I am the Bot. Commands: !help, !joke, !hour, !dice [sides], !google [search], !quiz, !answer [your_answer]");
     }
     else if (command == "joke") {
         sendMessage("PRIVMSG " + channel + " :What did the duck say to the duck? Quack Quack!");
@@ -171,8 +171,8 @@ void Bot::handleCommand(const std::string& channel, const std::string& full_comm
         sendMessage("PRIVMSG " + channel + " :Current time is: " + dt);
     }
 
-    // !dado command
-    else if (command == "dado") {
+    // !dice command
+    else if (command == "dice") {
         srand(time(0)); // Initialize random number generator seed
         int sides = 6;
         if (!args.empty()) {
@@ -203,16 +203,16 @@ void Bot::handleCommand(const std::string& channel, const std::string& full_comm
         }
     }
     
-    // Quiz commands (!quiz and !resposta)
+    // Quiz commands (!quiz and !answer)
     else if (command == "quiz") {
         if (!_quiz_answer.empty()) {
             sendMessage("PRIVMSG " + channel + " :A quiz is already in progress! What is the capital of Brazil?");
             return;
         }
         _quiz_answer = "brasilia"; // Set the answer (in lowercase)
-        sendMessage("PRIVMSG " + channel + " :STARTING QUIZ! What is the capital of Brazil? Use !resposta <your_answer> to respond.");
+        sendMessage("PRIVMSG " + channel + " :STARTING QUIZ! What is the capital of Brazil? Use !answer <your_answer> to respond.");
     }
-    else if (command == "resposta") {
+    else if (command == "answer") {
         if (_quiz_answer.empty()) {
             sendMessage("PRIVMSG " + channel + " :No quiz is active at the moment. Use !quiz to start one!");
             return;

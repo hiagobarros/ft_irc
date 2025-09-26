@@ -32,29 +32,29 @@ void DccClient::run(const std::string& mode, const std::string& arg1, const std:
     } else if (mode == "receive") {
         handleReceive();
     } else {
-        std::cerr << "Modo inválido. Use 'send' ou 'receive'." << std::endl;
+        std::cerr << "Invalid mode. Use 'send' or 'receive'." << std::endl;
     }
 
-    std::cout << "Operação DCC concluída. Desconectando do IRC." << std::endl;
+    std::cout << "DCC operation completed. Disconnecting from IRC." << std::endl;
 }
 
-// --- Métodos de Conexão IRC (similares ao Bot) ---
+// --- IRC Connection Methods (similar to Bot) ---
 void DccClient::connectToIrc() {
     _irc_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (_irc_socket_fd < 0) throw std::runtime_error("Erro ao criar o socket IRC");
+    if (_irc_socket_fd < 0) throw std::runtime_error("Error creating IRC socket");
 
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(_port);
     if (inet_pton(AF_INET, _host.c_str(), &server_addr.sin_addr) <= 0) {
-        throw std::runtime_error("Endereço de host inválido");
+        throw std::runtime_error("Invalid host address");
     }
 
     if (connect(_irc_socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        throw std::runtime_error("Erro ao conectar ao servidor IRC");
+        throw std::runtime_error("Error connecting to IRC server");
     }
-    std::cout << "Conectado ao servidor IRC como " << _nickname << "." << std::endl;
+    std::cout << "Connected to IRC server as " << _nickname << "." << std::endl;
 }
 
 void DccClient::sendMessageToIrc(const std::string& message) {
@@ -80,7 +80,7 @@ void DccClient::handleSend(const std::string& target_nick, const std::string& fi
     file.seekg(0, std::ios::beg);
 
     int listen_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (listen_fd < 0) throw std::runtime_error("Erro ao criar socket de escuta DCC");
+    if (listen_fd < 0) throw std::runtime_error("Error creating DCC listen socket");
     
     struct sockaddr_in listen_addr;
     memset(&listen_addr, 0, sizeof(listen_addr));
@@ -103,21 +103,21 @@ void DccClient::handleSend(const std::string& target_nick, const std::string& fi
     
     int transfer_fd = accept(listen_fd, NULL, NULL);
     if (transfer_fd < 0) {
-        std::cerr << "Erro no accept DCC" << std::endl;
+        std::cerr << "Error in DCC accept" << std::endl;
         close(listen_fd);
         return;
     }
-    std::cout << "Conexão DCC aceita! Enviando arquivo..." << std::endl;
+    std::cout << "DCC connection accepted! Sending file..." << std::endl;
 
     char buffer[4096];
     while (file.read(buffer, sizeof(buffer)) || file.gcount() > 0) {
         if (send(transfer_fd, buffer, file.gcount(), 0) < 0) {
-            std::cerr << "Erro ao enviar dados do arquivo." << std::endl;
+            std::cerr << "Error sending file data." << std::endl;
             break;
         }
     }
     
-    std::cout << "Transferência de arquivo concluída." << std::endl;
+    std::cout << "File transfer completed." << std::endl;
     file.close();
     close(transfer_fd);
     close(listen_fd);
@@ -157,7 +157,7 @@ void DccClient::handleReceive() {
 
 void DccClient::receiveFile(const std::string& filename, const std::string& ip, int port, long size) {
     int transfer_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (transfer_fd < 0) throw std::runtime_error("Erro ao criar socket de transferência DCC");
+    if (transfer_fd < 0) throw std::runtime_error("Error creating DCC transfer socket");
 
     struct sockaddr_in send_addr;
     memset(&send_addr, 0, sizeof(send_addr));
@@ -166,10 +166,10 @@ void DccClient::receiveFile(const std::string& filename, const std::string& ip, 
     inet_pton(AF_INET, ip.c_str(), &send_addr.sin_addr);
 
     if (connect(transfer_fd, (struct sockaddr*)&send_addr, sizeof(send_addr)) < 0) {
-        std::cerr << "Erro ao conectar para receber o arquivo." << std::endl;
+        std::cerr << "Error connecting to receive file." << std::endl;
         return;
     }
-    std::cout << "Conexão DCC estabelecida! Recebendo arquivo..." << std::endl;
+    std::cout << "DCC connection established! Receiving file..." << std::endl;
 
     std::ofstream file(("received_" + filename).c_str(), std::ios::binary);
     

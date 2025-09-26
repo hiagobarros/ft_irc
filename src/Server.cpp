@@ -250,11 +250,11 @@ void Server::executeCommand(int client_fd, const std::string& command_line) {
         
         std::cout << "INFO: " << client.getNickname() << " (FD: " << client_fd << ") is leaving. (" << quit_message << ")" << std::endl;
 
-        // Monta a notificação de QUIT
+        // Build QUIT notification
         std::string quit_notification = ":" + client.getNickname() + " QUIT :" + quit_message + "\r\n";
         
-        // Envia a notificação para todos os canais em que o cliente está
-        // É importante fazer uma cópia dos canais ou iterar com cuidado
+        // Send notification to all channels where the client is
+        // It's important to make a copy of channels or iterate carefully
         std::vector<std::string> channels_to_notify;
         for (std::map<std::string, Channel>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
             if (it->second.isClientInChannel(client_fd)) {

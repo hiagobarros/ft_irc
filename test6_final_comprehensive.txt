@@ -1,0 +1,24 @@
+==61836== Memcheck, a memory error detector
+==61836== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==61836== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==61836== Command: ./ircserv 6674 password
+==61836== 
+DEBUG: socket() created successfully. fd = 3
+Server listening on PORT: 6674
+New IP connection: 127.0.0.1 at PORT: 50832 | FD: 4
+DEBUG: Received from FD 4: PASS password
+INFO: Client 4 provided correct password.
+DEBUG: Received from FD 4: NICK finaltest
+INFO: Client 4 set nickname to finaltest
+DEBUG: Received from FD 4: USER finaltest 0 * :finaltest
+INFO: Client 4 set username to finaltest
+INFO: Client finaltest (FD: 4) was registered successfully.
+DEBUG: Received from FD 4: JOIN #final
+INFO: Channel #final created.
+INFO: Client finaltest joined channel #final
+DEBUG: Received from FD 4: PRIVMSG #final :Final test message
+DEBUG: Received from FD 4: TOPIC #final :Final topic
+DEBUG: Received from FD 4: PART #final
+INFO: finaltest left channel #final
+DEBUG: Received from FD 4: QUIT
+INFO: finaltest (FD: 4) is leaving. (Client Quit)

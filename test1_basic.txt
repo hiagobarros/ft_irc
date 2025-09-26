@@ -1,0 +1,17 @@
+==60877== Memcheck, a memory error detector
+==60877== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==60877== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==60877== Command: ./ircserv 6669 password
+==60877== 
+DEBUG: socket() created successfully. fd = 3
+Server listening on PORT: 6669
+New IP connection: 127.0.0.1 at PORT: 51714 | FD: 4
+DEBUG: Received from FD 4: PASS password
+INFO: Client 4 provided correct password.
+DEBUG: Received from FD 4: NICK user1
+INFO: Client 4 set nickname to user1
+DEBUG: Received from FD 4: USER user1 0 * :user1
+INFO: Client 4 set username to user1
+INFO: Client user1 (FD: 4) was registered successfully.
+DEBUG: Received from FD 4: QUIT
+INFO: user1 (FD: 4) is leaving. (Client Quit)
