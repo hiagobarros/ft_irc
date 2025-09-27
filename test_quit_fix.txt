@@ -1,7 +1,0 @@
-==52743== Memcheck, a memory error detector
-==52743== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==52743== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
-==52743== Command: ./ircserv 6667 pass
-==52743== 
-DEBUG: socket() created successfully. fd = 3
-Server listening on PORT: 6667
