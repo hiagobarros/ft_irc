@@ -34,6 +34,10 @@ class Server
         std::map<int, Client>       _clients;
 
         std::map<std::string, Channel> _channels; // Maps: channel name -> Channel object
+        
+        // Signal handling
+        static bool _shutdown_requested;
+        static void signalHandler(int signal);
 
         void setup();
         void acceptNewClient();

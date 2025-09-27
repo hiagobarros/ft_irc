@@ -14,11 +14,17 @@
 #include <cstring>
 ////////????
 
+// Static variable for signal handling
+bool Bot::_shutdown_requested = false;
+
 Bot::Bot(const std::string& host, int port, const std::string& password) :
     _host(host), _port(port), _password(password), _nickname("Bot"), _socket_fd(-1), _quiz_answer("")
 {
     // Ignore SIGPIPE to prevent crashes on broken pipes
     signal(SIGPIPE, SIG_IGN);
+    // Set up signal handlers for graceful shutdown
+    signal(SIGINT, Bot::signalHandler);
+    signal(SIGTERM, Bot::signalHandler);
 }
 
 Bot::~Bot() {
@@ -28,6 +34,11 @@ Bot::~Bot() {
     }
     // Clear any remaining strings to prevent memory leaks
     _quiz_answer.clear();
+}
+
+void Bot::signalHandler(int signal) {
+    (void)signal; // Suppress unused parameter warning
+    _shutdown_requested = true;
 }
 
 void Bot::connectToServer() {
@@ -108,7 +119,7 @@ void Bot::mainLoop() {
     }
     
     char buffer[4096];
-    while (_socket_fd != -1) {
+    while (_socket_fd != -1 && !_shutdown_requested) {
         int bytes_read = recv(_socket_fd, buffer, 4096, 0);
         if (bytes_read <= 0) {
             std::cout << "Server disconnected." << std::endl;
@@ -118,6 +129,14 @@ void Bot::mainLoop() {
         }
         buffer[bytes_read] = '\0';
         parseServerMessage(buffer);
+    }
+    
+    if (_shutdown_requested) {
+        std::cout << "Shutdown signal received. Bot disconnecting gracefully..." << std::endl;
+        if (_socket_fd != -1) {
+            close(_socket_fd);
+            _socket_fd = -1;
+        }
     }
 }
 

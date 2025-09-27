@@ -2,10 +2,23 @@
 //#include "Client.hpp"
 
 #include <sstream>
+#include <signal.h>
+#include <csignal>
+
+// Static variable for signal handling
+bool Server::_shutdown_requested = false;
 
 Server::Server(int port, const std::string &password) : _port(port), _password(password), _server_fd(-1)
 {
+    // Set up signal handlers for graceful shutdown
+    signal(SIGINT, Server::signalHandler);
+    signal(SIGTERM, Server::signalHandler);
     setup();
+}
+
+void Server::signalHandler(int signal) {
+    (void)signal; // Suppress unused parameter warning
+    _shutdown_requested = true;
 }
 
 Server::~Server()
@@ -61,10 +74,16 @@ void Server::setup()
 }
 
 void Server::run() {
-    while (true) {
+    while (!_shutdown_requested) {
         int activity = poll(_fds.data(), _fds.size(), -1);
         if (activity < 0) {
             std::cerr << "Poll error" << std::endl;
+            break;
+        }
+
+        // Check for shutdown signal
+        if (_shutdown_requested) {
+            std::cout << "Shutdown signal received. Closing server gracefully..." << std::endl;
             break;
         }
 
@@ -86,6 +105,15 @@ void Server::run() {
             }
         }
     }
+    
+    // Cleanup on shutdown
+    std::cout << "Cleaning up server resources..." << std::endl;
+    for (size_t i = 0; i < _fds.size(); ++i) {
+        if (_fds[i].fd != -1) {
+            close(_fds[i].fd);
+        }
+    }
+    _clients.clear();
 }
 
 

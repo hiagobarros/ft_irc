@@ -14,6 +14,10 @@ public:
     void run(const std::string& mode, const std::string& arg1, const std::string& arg2);
 
 private:
+    // Signal handling
+    static bool _shutdown_requested;
+    static void signalHandler(int signal);
+    
     // Métodos para conexão com o servidor IRC
     void connectToIrc();
     void registerWithIrc();

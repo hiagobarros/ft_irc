@@ -14,6 +14,9 @@ public:
     void run();
 
 private:
+    // Signal handling
+    static bool _shutdown_requested;
+    static void signalHandler(int signal);
     void connectToServer();
     void registerWithServer();
     void mainLoop();

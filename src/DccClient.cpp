@@ -10,12 +10,18 @@
 #include <cstdlib>
 #include <signal.h>
 
+// Static variable for signal handling
+bool DccClient::_shutdown_requested = false;
+
 // --- Construtor e Destrutor ---
 DccClient::DccClient(const std::string& host, int port, const std::string& password, const std::string& nickname) :
     _host(host), _port(port), _password(password), _nickname(nickname), _irc_socket_fd(-1)
 {
     // Ignore SIGPIPE to prevent crashes on broken pipes
     signal(SIGPIPE, SIG_IGN);
+    // Set up signal handlers for graceful shutdown
+    signal(SIGINT, DccClient::signalHandler);
+    signal(SIGTERM, DccClient::signalHandler);
 }
 
 DccClient::~DccClient() {
@@ -23,6 +29,11 @@ DccClient::~DccClient() {
         close(_irc_socket_fd);
         _irc_socket_fd = -1;
     }
+}
+
+void DccClient::signalHandler(int signal) {
+    (void)signal; // Suppress unused parameter warning
+    _shutdown_requested = true;
 }
 
 // --- Lógica Principal ---
@@ -164,7 +175,7 @@ void DccClient::handleSend(const std::string& target_nick, const std::string& fi
 void DccClient::handleReceive() {
     std::cout << "Aguardando ofertas de DCC... (Pressione Ctrl+C para sair)" << std::endl;
     char buffer[4096];
-    while (true) {
+    while (!_shutdown_requested) {
         int bytes_read = recv(_irc_socket_fd, buffer, 4096, 0);
         if (bytes_read <= 0) {
             std::cout << "Desconectado do servidor IRC." << std::endl;
@@ -188,6 +199,14 @@ void DccClient::handleReceive() {
             std::cout << "Oferta DCC recebida para o arquivo: " << filename << std::endl;
             receiveFile(filename, ip_str, std::atoi(port_str.c_str()), std::atol(size_str.c_str()));
             break; // Sai depois de receber um arquivo
+        }
+    }
+    
+    if (_shutdown_requested) {
+        std::cout << "Shutdown signal received. DCC Client disconnecting gracefully..." << std::endl;
+        if (_irc_socket_fd != -1) {
+            close(_irc_socket_fd);
+            _irc_socket_fd = -1;
         }
     }
 }
