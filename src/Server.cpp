@@ -265,8 +265,20 @@ void Server::executeCommand(int client_fd, const std::string& command_line) {
             //std::cout << "ERRO: Nickname '" << params << "' já está em uso." << std::endl;
             return;
         }
+        std::string old_nick = client.getNickname();
         client.setNickname(params);
         std::cout << "INFO: Client " << client_fd << " set nickname to " << params << std::endl;
+        
+        // Notify all clients about nickname change
+        if (!old_nick.empty()) {
+            std::string nick_change_msg = ":" + old_nick + " NICK " + params + "\r\n";
+            for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+                if (it->first != client_fd) { // Don't send to the client that changed
+                    send(it->first, nick_change_msg.c_str(), nick_change_msg.length(), 0);
+                }
+            }
+        }
+        
         checkRegistration(client_fd);
     }
     else if (command == "USER") {
