@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdexcept>
+#include <signal.h>
 
 /////////????
 #include <string>
@@ -15,12 +16,18 @@
 
 Bot::Bot(const std::string& host, int port, const std::string& password) :
     _host(host), _port(port), _password(password), _nickname("Bot"), _socket_fd(-1), _quiz_answer("")
-{}
+{
+    // Ignore SIGPIPE to prevent crashes on broken pipes
+    signal(SIGPIPE, SIG_IGN);
+}
 
 Bot::~Bot() {
     if (_socket_fd != -1) {
         close(_socket_fd);
+        _socket_fd = -1;
     }
+    // Clear any remaining strings to prevent memory leaks
+    _quiz_answer.clear();
 }
 
 void Bot::connectToServer() {
@@ -57,25 +64,56 @@ void Bot::connectToServer() {
 // DENTRO DE Bot.cpp
 
 void Bot::sendMessage(const std::string& message) {
+    if (_socket_fd == -1) {
+        return; // Don't send if socket is invalid
+    }
     std::string full_message = message + "\r\n";
-    send(_socket_fd, full_message.c_str(), full_message.length(), 0);
+    int result = send(_socket_fd, full_message.c_str(), full_message.length(), 0);
+    if (result < 0) {
+        // Handle send error gracefully
+        close(_socket_fd);
+        _socket_fd = -1;
+    }
 }
 
 void Bot::registerWithServer() {
-    sendMessage("PASS " + _password);
-    sendMessage("NICK " + _nickname);
-    sendMessage("USER " + _nickname + " 0 * :" + _nickname);
+    if (_socket_fd == -1) {
+        return; // Don't register if socket is invalid
+    }
+    
+    // Use local variables to avoid string concatenation memory issues
+    std::string pass_msg = "PASS " + _password;
+    std::string nick_msg = "NICK " + _nickname;
+    std::string user_msg = "USER " + _nickname + " 0 * :" + _nickname;
+    std::string join_msg = "JOIN #bot-channel";
+    
+    sendMessage(pass_msg);
+    sendMessage(nick_msg);
+    sendMessage(user_msg);
+    
     // Wait a bit for registration to be processed (simple solution)
     sleep(1);
-    sendMessage("JOIN #bot-channel"); // Channel where bot will operate
+    sendMessage(join_msg); // Channel where bot will operate
+    
+    // Clear local strings to free memory
+    pass_msg.clear();
+    nick_msg.clear();
+    user_msg.clear();
+    join_msg.clear();
 }
 
 void Bot::mainLoop() {
+    if (_socket_fd == -1) {
+        return; // Don't loop if socket is invalid
+    }
+    
     char buffer[4096];
-    while (true) {
+    while (_socket_fd != -1) {
         int bytes_read = recv(_socket_fd, buffer, 4096, 0);
         if (bytes_read <= 0) {
             std::cout << "Server disconnected." << std::endl;
+            close(_socket_fd);
+            _socket_fd = -1;
             break;
         }
         buffer[bytes_read] = '\0';
@@ -84,9 +122,18 @@ void Bot::mainLoop() {
 }
 
 void Bot::run() {
-    connectToServer();
-    registerWithServer();
-    mainLoop();
+    try {
+        connectToServer();
+        registerWithServer();
+        mainLoop();
+    } catch (const std::exception& e) {
+        std::cerr << "Erro fatal do Bot: " << e.what() << std::endl;
+        // Ensure cleanup on exception
+        if (_socket_fd != -1) {
+            close(_socket_fd);
+            _socket_fd = -1;
+        }
+    }
 }
 
 

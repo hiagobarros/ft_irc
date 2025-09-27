@@ -8,34 +8,48 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <signal.h>
 
 // --- Construtor e Destrutor ---
 DccClient::DccClient(const std::string& host, int port, const std::string& password, const std::string& nickname) :
     _host(host), _port(port), _password(password), _nickname(nickname), _irc_socket_fd(-1)
-{}
+{
+    // Ignore SIGPIPE to prevent crashes on broken pipes
+    signal(SIGPIPE, SIG_IGN);
+}
 
 DccClient::~DccClient() {
     if (_irc_socket_fd != -1) {
         close(_irc_socket_fd);
+        _irc_socket_fd = -1;
     }
 }
 
 // --- Lógica Principal ---
 void DccClient::run(const std::string& mode, const std::string& arg1, const std::string& arg2) {
-    // Primeiro, sempre nos conectamos ao servidor IRC
-    connectToIrc();
-    registerWithIrc();
+    try {
+        // Primeiro, sempre nos conectamos ao servidor IRC
+        connectToIrc();
+        registerWithIrc();
 
-    // Agora, dependendo do modo, executamos a ação
-    if (mode == "send") {
-        handleSend(arg1, arg2); // arg1 = target_nick, arg2 = filepath
-    } else if (mode == "receive") {
-        handleReceive();
-    } else {
-        std::cerr << "Invalid mode. Use 'send' or 'receive'." << std::endl;
+        // Agora, dependendo do modo, executamos a ação
+        if (mode == "send") {
+            handleSend(arg1, arg2); // arg1 = target_nick, arg2 = filepath
+        } else if (mode == "receive") {
+            handleReceive();
+        } else {
+            std::cerr << "Invalid mode. Use 'send' or 'receive'." << std::endl;
+        }
+
+        std::cout << "DCC operation completed. Disconnecting from IRC." << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Erro fatal do DCC Client: " << e.what() << std::endl;
+        // Ensure cleanup on exception
+        if (_irc_socket_fd != -1) {
+            close(_irc_socket_fd);
+            _irc_socket_fd = -1;
+        }
     }
-
-    std::cout << "DCC operation completed. Disconnecting from IRC." << std::endl;
 }
 
 // --- IRC Connection Methods (similar to Bot) ---
@@ -58,15 +72,38 @@ void DccClient::connectToIrc() {
 }
 
 void DccClient::sendMessageToIrc(const std::string& message) {
+    if (_irc_socket_fd == -1) {
+        return; // Don't send if socket is invalid
+    }
     std::string full_message = message + "\r\n";
-    send(_irc_socket_fd, full_message.c_str(), full_message.length(), 0);
+    int result = send(_irc_socket_fd, full_message.c_str(), full_message.length(), 0);
+    if (result < 0) {
+        // Handle send error gracefully
+        close(_irc_socket_fd);
+        _irc_socket_fd = -1;
+    }
 }
 
 void DccClient::registerWithIrc() {
-    sendMessageToIrc("PASS " + _password);
-    sendMessageToIrc("NICK " + _nickname);
-    sendMessageToIrc("USER " + _nickname + " 0 * :" + _nickname);
+    if (_irc_socket_fd == -1) {
+        return; // Don't register if socket is invalid
+    }
+    
+    // Use local variables to avoid string concatenation memory issues
+    std::string pass_msg = "PASS " + _password;
+    std::string nick_msg = "NICK " + _nickname;
+    std::string user_msg = "USER " + _nickname + " 0 * :" + _nickname;
+    
+    sendMessageToIrc(pass_msg);
+    sendMessageToIrc(nick_msg);
+    sendMessageToIrc(user_msg);
+    
     sleep(1); // Dá tempo para o servidor processar o registro
+    
+    // Clear local strings to free memory
+    pass_msg.clear();
+    nick_msg.clear();
+    user_msg.clear();
 }
 
 // --- Lógica de Envio DCC ---
