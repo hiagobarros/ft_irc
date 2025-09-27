@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <cstring> // Para strerror
 #include <cerrno>  // Para errno
+#include <fcntl.h> // Para fcntl
 #include "Channel.hpp"
 
 #define RED "\033[31m"

@@ -25,6 +25,11 @@ void Server::setup()
         throw std::runtime_error("Error creating socket: " + std::string(strerror(errno)));
     }
 
+    // Set socket to non-blocking mode
+    if (fcntl(_server_fd, F_SETFL, O_NONBLOCK) < 0) {
+        throw std::runtime_error("Error setting socket to non-blocking: " + std::string(strerror(errno)));
+    }
+
     std::cout << "DEBUG: socket() created successfully. fd = " << _server_fd << std::endl;
 
     // Optional but recommended: allows reusing address and port immediately
@@ -59,7 +64,7 @@ void Server::run() {
     while (true) {
         int activity = poll(_fds.data(), _fds.size(), -1);
         if (activity < 0) {
-            std::cerr << "Poll error: " << strerror(errno) << std::endl;
+            std::cerr << "Poll error" << std::endl;
             break;
         }
 
@@ -96,6 +101,13 @@ void Server::acceptNewClient()
         return;
     }
 
+    // Set client socket to non-blocking mode
+    if (fcntl(new_client_fd, F_SETFL, O_NONBLOCK) < 0) {
+        std::cerr << "Error setting client socket to non-blocking: " << strerror(errno) << std::endl;
+        close(new_client_fd);
+        return;
+    }
+
     struct pollfd new_pollfd;
     new_pollfd.fd = new_client_fd;
     new_pollfd.events = POLLIN;
@@ -124,7 +136,7 @@ void Server::handleClientData(int client_fd) {
         if (bytes_read == 0)
             std::cout << "Client (FD: " << client_fd << ") disconnected." << std::endl;
         else
-            std::cerr << "Recv error for FD " << client_fd << ": " << strerror(errno) << std::endl;
+            std::cerr << "Recv error for FD " << client_fd << std::endl;
         removeClient(client_fd);
     } else {
         // CRITICAL FIX: Check again before accessing client data
@@ -161,9 +173,9 @@ void Server::processClientBuffer(int client_fd) {
         std::string command_line = buffer_copy.substr(0, pos);
         // Remove command line (and \r\n) from buffer_copy
         if((pos = buffer_copy.find("\r\n")) != std::string::npos)
-            buffer_copy.erase(0, pos + 2);//???
+            buffer_copy.erase(0, pos + 2);
         else if((pos = buffer_copy.find("\n")) != std::string::npos)
-            buffer_copy.erase(0, pos + 1);//???/
+            buffer_copy.erase(0, pos + 1);
         // If line is not empty, execute it
         if (!command_line.empty()) {
             executeCommand(client_fd, command_line);
