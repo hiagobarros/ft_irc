@@ -3,14 +3,14 @@
 
 #include <iostream>
 #include <string>
-// Inclua todos os headers de rede necessários
+// Include all necessary network headers
 
 class DccClient {
 public:
     DccClient(const std::string& host, int port, const std::string& password, const std::string& nickname);
     ~DccClient();
 
-    // O método principal que será chamado pelo main
+    // The main method that will be called by main
     void run(const std::string& mode, const std::string& arg1, const std::string& arg2);
 
 private:
@@ -18,17 +18,17 @@ private:
     static bool _shutdown_requested;
     static void signalHandler(int signal);
     
-    // Métodos para conexão com o servidor IRC
+    // Methods for IRC server connection
     void connectToIrc();
     void registerWithIrc();
     void sendMessageToIrc(const std::string& message);
 
-    // Métodos para a lógica DCC
+    // Methods for DCC logic
     void handleSend(const std::string& target_nick, const std::string& filepath);
     void handleReceive();
     void receiveFile(const std::string& filename, const std::string& ip, int port, long size);
 
-    // Atributos
+    // Attributes
     std::string _host;
     int         _port;
     std::string _password;

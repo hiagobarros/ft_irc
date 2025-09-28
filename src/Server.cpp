@@ -277,12 +277,12 @@ void Server::executeCommand(int client_fd, const std::string& command_line) {
         }
         if (params.empty()) {
             sendReply(client_fd, 431, client_nick, ":No nickname given"); // ERR_NONICKNAMEGIVEN
-            //std::cout << "ERRO: Cliente " << client_fd << " tentou NICK sem parâmetro." << std::endl;
+            //std::cout << "ERROR: Client " << client_fd << " tried NICK without parameter." << std::endl;
             return;
         }
         if (isNicknameInUse(params)) {
             sendReply(client_fd, 433, client_nick, params + " :Nickname is already in use"); // ERR_NICKNAMEINUSE
-            //std::cout << "ERRO: Nickname '" << params << "' já está em uso." << std::endl;
+            //std::cout << "ERROR: Nickname '" << params << "' is already in use." << std::endl;
             return;
         }
         std::string old_nick = client.getNickname();
@@ -307,7 +307,7 @@ void Server::executeCommand(int client_fd, const std::string& command_line) {
         size_t first_space = params.find(' ');
         if (first_space == std::string::npos) {
             sendReply(client_fd, 461, client_nick, "USER :Not enough parameters"); // ERR_NEEDMOREPARAMS
-            //std::cout << "ERRO: Cliente " << client_fd << " enviou USER com parâmetros insuficientes." << std::endl;
+            //std::cout << "ERROR: Client " << client_fd << " sent USER with insufficient parameters." << std::endl;
             return;
         }
         std::string username = params.substr(0, first_space);
@@ -332,7 +332,7 @@ void Server::executeCommand(int client_fd, const std::string& command_line) {
             }
         }
         
-        // Remove o cliente do servidor
+        // Remove the client from the server
         removeClient(client_fd);
     }
     // Check if client is ALREADY REGISTERED to process other commands
@@ -349,7 +349,7 @@ void Server::executeCommand(int client_fd, const std::string& command_line) {
             std::string key = (params.find(' ') != std::string::npos) ? params.substr(params.find(' ') + 1) : "";
 
             if (channel_name.empty() || channel_name[0] != '#') {
-                // Comportamento inválido, pode ignorar ou enviar um erro genérico
+                // Invalid behavior, can ignore or send a generic error
                 return;
             }
 
@@ -493,7 +493,7 @@ void Server::executeCommand(int client_fd, const std::string& command_line) {
             
             std::string channel_name = params.substr(0, first_space);
             std::string user_to_kick_nick = params.substr(first_space + 1);
-            std::string reason = "Kicked by operator"; // Razão padrão
+            std::string reason = "Kicked by operator"; // Default reason
             
             size_t colon_pos = user_to_kick_nick.find(':');
             if (colon_pos != std::string::npos) {
@@ -745,7 +745,7 @@ void Server::executeCommand(int client_fd, const std::string& command_line) {
                         int limit = std::atoi(mode_param.c_str());
                         channel.setUserLimit(limit > 0 ? limit : -1);
                     } else {
-                        channel.setUserLimit(-1); // Remove o limite
+                        channel.setUserLimit(-1); // Remove the limit
                     }
                     break;
                 default:
@@ -764,7 +764,7 @@ void Server::executeCommand(int client_fd, const std::string& command_line) {
     }
     // Logic for UNREGISTERED clients that send invalid commands
     else {
-        //std::cout << "AVISO: Comando '" << command << "' recebido de cliente não registrado (FD: " << client_fd << ")." << std::endl;
+        //std::cout << "WARNING: Command '" << command << "' received from unregistered client (FD: " << client_fd << ")." << std::endl;
         sendReply(client_fd, 451, client_nick, ":You have not registered"); // ERR_NOTREGISTERED
     }
 }

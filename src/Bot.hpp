@@ -1,10 +1,10 @@
-// NOVO ARQUIVO: Bot.hpp
+// NEW FILE: Bot.hpp
 #ifndef BOT_HPP
 #define BOT_HPP
 
 #include <iostream>
 #include <string>
-// ... inclua os headers de rede necessários ...
+// ... include necessary network headers ...
 
 class Bot {
 public:

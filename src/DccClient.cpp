@@ -13,7 +13,7 @@
 // Static variable for signal handling
 bool DccClient::_shutdown_requested = false;
 
-// --- Construtor e Destrutor ---
+// --- Constructor and Destructor ---
 DccClient::DccClient(const std::string& host, int port, const std::string& password, const std::string& nickname) :
     _host(host), _port(port), _password(password), _nickname(nickname), _irc_socket_fd(-1)
 {
@@ -43,14 +43,14 @@ void DccClient::signalHandler(int signal) {
     _shutdown_requested = true;
 }
 
-// --- Lógica Principal ---
+// --- Main Logic ---
 void DccClient::run(const std::string& mode, const std::string& arg1, const std::string& arg2) {
     try {
-        // Primeiro, sempre nos conectamos ao servidor IRC
+        // First, we always connect to the IRC server
         connectToIrc();
         registerWithIrc();
 
-        // Agora, dependendo do modo, executamos a ação
+        // Now, depending on the mode, we execute the action
         if (mode == "send") {
             handleSend(arg1, arg2); // arg1 = target_nick, arg2 = filepath
         } else if (mode == "receive") {
@@ -116,7 +116,7 @@ void DccClient::registerWithIrc() {
     sendMessageToIrc(nick_msg);
     sendMessageToIrc(user_msg);
     
-    sleep(1); // Dá tempo para o servidor processar o registro
+    sleep(1); // Gives time for the server to process the registration
     
     // Clear local strings to free memory
     pass_msg.clear();
@@ -124,7 +124,7 @@ void DccClient::registerWithIrc() {
     user_msg.clear();
 }
 
-// --- Lógica de Envio DCC ---
+// --- DCC Send Logic ---
 void DccClient::handleSend(const std::string& target_nick, const std::string& filepath) {
     std::ifstream file(filepath.c_str(), std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
@@ -141,7 +141,7 @@ void DccClient::handleSend(const std::string& target_nick, const std::string& fi
     memset(&listen_addr, 0, sizeof(listen_addr));
     listen_addr.sin_family = AF_INET;
     listen_addr.sin_addr.s_addr = INADDR_ANY;
-    listen_addr.sin_port = 0; // Porta aleatória
+    listen_addr.sin_port = 0; // Random port
 
     bind(listen_fd, (struct sockaddr*)&listen_addr, sizeof(listen_addr));
     listen(listen_fd, 1);
@@ -178,7 +178,7 @@ void DccClient::handleSend(const std::string& target_nick, const std::string& fi
     close(listen_fd);
 }
 
-// --- Lógica de Recebimento DCC ---
+// --- DCC Receive Logic ---
 void DccClient::handleReceive() {
     std::cout << "Aguardando ofertas de DCC... (Pressione Ctrl+C para sair)" << std::endl;
     char buffer[4096];
@@ -201,11 +201,11 @@ void DccClient::handleReceive() {
             std::string token, filename, ip_str, port_str, size_str;
             
             ss_dcc >> token >> token >> filename >> ip_str >> port_str >> size_str;
-            size_str.erase(size_str.find_last_of('\x01')); // Remove o delimitador final
+            size_str.erase(size_str.find_last_of('\x01')); // Remove the final delimiter
             
             std::cout << "Oferta DCC recebida para o arquivo: " << filename << std::endl;
             receiveFile(filename, ip_str, std::atoi(port_str.c_str()), std::atol(size_str.c_str()));
-            break; // Sai depois de receber um arquivo
+            break; // Exit after receiving a file
         }
     }
     
