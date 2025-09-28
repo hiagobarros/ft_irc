@@ -196,19 +196,20 @@ void Server::processClientBuffer(int client_fd) {
     // Clear the original buffer to avoid processing the same data twice
     _clients[client_fd].getBuffer().clear();
     
-    // Handle EOF (Ctrl+D) as data accumulator - like heredoc/EOF
-    // Ctrl+D signals end of current input but doesn't terminate command
-    // Remove EOF characters and continue accumulating data
+    // Handle EOF (Ctrl+D) - convert to visible ^D and treat as command separator
+    // Ctrl+D should be visible as ^D but still work as command separator
     for (size_t i = 0; i < buffer_copy.length(); i++) {
         if (buffer_copy[i] == '\x04') { // EOF character
-            buffer_copy.erase(i, 1); // Remove EOF, keep accumulating
-            i--; // Adjust index after removal
+            buffer_copy.replace(i, 1, "^D"); // Replace EOF with visible ^D
+            i++; // Skip the 'D' character we just added
         }
     }
     
-    // An IRC command ends with "\r\n" or "\n" (not EOF)
+    // An IRC command ends with "\r\n", "\n", or "^D". We look for this.
     size_t pos = 0;
-    while ((pos = buffer_copy.find("\r\n")) != std::string::npos || (pos = buffer_copy.find("\n")) != std::string::npos) {
+    while ((pos = buffer_copy.find("\r\n")) != std::string::npos || 
+           (pos = buffer_copy.find("\n")) != std::string::npos ||
+           (pos = buffer_copy.find("^D")) != std::string::npos) {
         // CRITICAL FIX: Check if client still exists before processing each command
         if (_clients.find(client_fd) == _clients.end()) {
             return; // Client was removed, stop processing
@@ -216,11 +217,13 @@ void Server::processClientBuffer(int client_fd) {
         
         // Extract command line
         std::string command_line = buffer_copy.substr(0, pos);
-        // Remove command line (and \r\n) from buffer_copy
+        // Remove command line and separator from buffer_copy
         if((pos = buffer_copy.find("\r\n")) != std::string::npos)
             buffer_copy.erase(0, pos + 2);
         else if((pos = buffer_copy.find("\n")) != std::string::npos)
             buffer_copy.erase(0, pos + 1);
+        else if((pos = buffer_copy.find("^D")) != std::string::npos)
+            buffer_copy.erase(0, pos + 2);
         // If line is not empty, execute it
         if (!command_line.empty()) {
             executeCommand(client_fd, command_line);
