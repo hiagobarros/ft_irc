@@ -22,6 +22,7 @@ DccClient::DccClient(const std::string& host, int port, const std::string& passw
     // Set up signal handlers for graceful shutdown
     signal(SIGINT, DccClient::signalHandler);
     signal(SIGTERM, DccClient::signalHandler);
+    signal(SIGQUIT, DccClient::signalHandler);
 }
 
 DccClient::~DccClient() {
@@ -32,7 +33,13 @@ DccClient::~DccClient() {
 }
 
 void DccClient::signalHandler(int signal) {
-    (void)signal; // Suppress unused parameter warning
+    if (signal == SIGINT) {
+        std::cout << "\nDCC Client received SIGINT (Ctrl+C). Shutting down gracefully..." << std::endl;
+    } else if (signal == SIGTERM) {
+        std::cout << "\nDCC Client received SIGTERM. Shutting down gracefully..." << std::endl;
+    } else if (signal == SIGQUIT) {
+        std::cout << "\nDCC Client received SIGQUIT (Ctrl+\\)). Shutting down gracefully..." << std::endl;
+    }
     _shutdown_requested = true;
 }
 

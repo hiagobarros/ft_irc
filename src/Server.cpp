@@ -13,11 +13,18 @@ Server::Server(int port, const std::string &password) : _port(port), _password(p
     // Set up signal handlers for graceful shutdown
     signal(SIGINT, Server::signalHandler);
     signal(SIGTERM, Server::signalHandler);
+    signal(SIGQUIT, Server::signalHandler);
     setup();
 }
 
 void Server::signalHandler(int signal) {
-    (void)signal; // Suppress unused parameter warning
+    if (signal == SIGINT) {
+        std::cout << "\nReceived SIGINT (Ctrl+C). Shutting down gracefully..." << std::endl;
+    } else if (signal == SIGTERM) {
+        std::cout << "\nReceived SIGTERM. Shutting down gracefully..." << std::endl;
+    } else if (signal == SIGQUIT) {
+        std::cout << "\nReceived SIGQUIT (Ctrl+\\)). Shutting down gracefully..." << std::endl;
+    }
     _shutdown_requested = true;
 }
 

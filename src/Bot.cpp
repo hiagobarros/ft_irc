@@ -25,6 +25,7 @@ Bot::Bot(const std::string& host, int port, const std::string& password) :
     // Set up signal handlers for graceful shutdown
     signal(SIGINT, Bot::signalHandler);
     signal(SIGTERM, Bot::signalHandler);
+    signal(SIGQUIT, Bot::signalHandler);
 }
 
 Bot::~Bot() {
@@ -37,7 +38,13 @@ Bot::~Bot() {
 }
 
 void Bot::signalHandler(int signal) {
-    (void)signal; // Suppress unused parameter warning
+    if (signal == SIGINT) {
+        std::cout << "\nBot received SIGINT (Ctrl+C). Shutting down gracefully..." << std::endl;
+    } else if (signal == SIGTERM) {
+        std::cout << "\nBot received SIGTERM. Shutting down gracefully..." << std::endl;
+    } else if (signal == SIGQUIT) {
+        std::cout << "\nBot received SIGQUIT (Ctrl+\\)). Shutting down gracefully..." << std::endl;
+    }
     _shutdown_requested = true;
 }
 
