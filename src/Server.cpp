@@ -197,16 +197,14 @@ void Server::processClientBuffer(int client_fd) {
     _clients[client_fd].getBuffer().clear();
     
     // Handle EOF (Ctrl+D) as command separator
-    // Replace EOF characters (0x04) with newlines to process as command separators
-    for (size_t i = 0; i < buffer_copy.length(); i++) {
-        if (buffer_copy[i] == '\x04') { // EOF character
-            buffer_copy[i] = '\n';
-        }
-    }
+    // Keep EOF characters visible but treat them as command separators
+    // We'll process them in the command parsing loop below
     
-    // An IRC command ends with "\r\n" or "\n". We look for this.
+    // An IRC command ends with "\r\n", "\n", or EOF (0x04). We look for this.
     size_t pos = 0;
-    while ((pos = buffer_copy.find("\r\n")) != std::string::npos || (pos = buffer_copy.find("\n")) != std::string::npos) {
+    while ((pos = buffer_copy.find("\r\n")) != std::string::npos || 
+           (pos = buffer_copy.find("\n")) != std::string::npos ||
+           (pos = buffer_copy.find("\x04")) != std::string::npos) {
         // CRITICAL FIX: Check if client still exists before processing each command
         if (_clients.find(client_fd) == _clients.end()) {
             return; // Client was removed, stop processing
@@ -214,10 +212,12 @@ void Server::processClientBuffer(int client_fd) {
         
         // Extract command line
         std::string command_line = buffer_copy.substr(0, pos);
-        // Remove command line (and \r\n) from buffer_copy
+        // Remove command line and separator from buffer_copy
         if((pos = buffer_copy.find("\r\n")) != std::string::npos)
             buffer_copy.erase(0, pos + 2);
         else if((pos = buffer_copy.find("\n")) != std::string::npos)
+            buffer_copy.erase(0, pos + 1);
+        else if((pos = buffer_copy.find("\x04")) != std::string::npos)
             buffer_copy.erase(0, pos + 1);
         // If line is not empty, execute it
         if (!command_line.empty()) {
