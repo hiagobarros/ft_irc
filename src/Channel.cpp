@@ -19,6 +19,11 @@ const std::string& Channel::getName() const {
 }
 
 void Channel::addClient(int client_fd) {
+    // Check if client is already in channel
+    if (isClientInChannel(client_fd)) {
+        return; // Client already in channel, don't add again
+    }
+    
     // If channel is empty, first to enter becomes operator
     if (_clients_fds.empty()) {
         addOperator(client_fd);
