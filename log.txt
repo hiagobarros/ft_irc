@@ -1,0 +1,19 @@
+~/workspace/common_core/stone5/ft_irc-main-6 (main*) » nc 10.12.6.3 6667
+Type: PASS <server's password>
+PASS 123
+correct password!!!
+NICK user
+USER 1568 1655
+:irc.42.fr 001 user :Welcome to the Internet Relay Network user
+JOIN #42
+:user JOIN #42
+:irc.42.fr 332 user #42 :No topic is set.
+:irc.42.fr 353 user = #42 :@user 
+:irc.42.fr 366 user #42 :End of /NAMES list.
+JOIN #42
+:user JOIN #42
+:user JOIN #42
+:irc.42.fr 332 user #42 :No topic is set.
+:irc.42.fr 353 user = #42 :@user @user 
+:irc.42.fr 366 user #42 :End of /NAMES list.
+
