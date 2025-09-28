@@ -9,7 +9,7 @@ OBJS = $(SRCS:.cpp=.o)
 CXXFLAGS_SERVER = -Wall -Wextra -Werror -std=c++98
 
 # --- Bot (Bonus Part) ---
-BOT_NAME = bot
+BOT_NAME = ircbot
 BOT_SRCS = src/bot_main.cpp src/Bot.cpp
 BOT_OBJS = $(BOT_SRCS:.cpp=.o)
 # C++11 flags and include directory for the bot
@@ -41,7 +41,8 @@ $(NAME): $(OBJS)
 # --- Bonus Rules ---
 
 # The 'bonus' rule compiles the server + bot + dcc_client
-bonus: $(NAME) $(BOT_NAME) $(DCC_NAME)
+bonus: $(NAME) $(BOT_NAME) 
+#$(DCC_NAME)
 
 # Rule to compile the bot (bonus part)
 $(BOT_NAME): $(BOT_OBJS)
@@ -50,23 +51,23 @@ $(BOT_NAME): $(BOT_OBJS)
 	@echo "Bot $(BOT_NAME) compiled successfully."
 
 # Rule to compile the DCC Client (bonus part)
-$(DCC_NAME): $(DCC_OBJS)
-	@echo "Compiling the DCC Client..."
-	$(CXX) $(CXXFLAGS_DCC) -o $(DCC_NAME) $(DCC_OBJS)
-	@echo "DCC Client $(DCC_NAME) compiled successfully."
+#$(DCC_NAME): $(DCC_OBJS)
+#	@echo "Compiling the DCC Client..."
+#	$(CXX) $(CXXFLAGS_DCC) -o $(DCC_NAME) $(DCC_OBJS)
+#	@echo "DCC Client $(DCC_NAME) compiled successfully."
 
 # --- Cleanup Rules ---
 
 # The 'clean' rule removes object files for both targets
 clean:
 	@echo "Cleaning object files..."
-	rm -f $(OBJS) $(BOT_OBJS) $(DCC_OBJS)
+	rm -f $(OBJS) $(BOT_OBJS) #$(DCC_OBJS)
 	@echo "Cleanup complete."
 
 # The 'fclean' rule removes object files and executables
 fclean: clean
 	@echo "Cleaning executables..."
-	rm -f $(NAME) $(BOT_NAME) $(DCC_NAME) 
+	rm -f $(NAME) $(BOT_NAME) #$(DCC_NAME) 
 	@echo "Full cleanup complete."
 
 # The 're' rule performs a full cleanup and recompiles everything
