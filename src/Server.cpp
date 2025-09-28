@@ -196,9 +196,17 @@ void Server::processClientBuffer(int client_fd) {
     // Clear the original buffer to avoid processing the same data twice
     _clients[client_fd].getBuffer().clear();
     
-    // An IRC command ends with "\r\n". We look for this.
+    // Handle EOF (Ctrl+D) as command separator
+    // Replace EOF characters (0x04) with newlines to process as command separators
+    for (size_t i = 0; i < buffer_copy.length(); i++) {
+        if (buffer_copy[i] == '\x04') { // EOF character
+            buffer_copy[i] = '\n';
+        }
+    }
+    
+    // An IRC command ends with "\r\n" or "\n". We look for this.
     size_t pos = 0;
-    while ((pos = buffer_copy.find("\r\n")) != std::string::npos || (pos = buffer_copy.find("\n")) != std::string::npos) {//???<\r\n>
+    while ((pos = buffer_copy.find("\r\n")) != std::string::npos || (pos = buffer_copy.find("\n")) != std::string::npos) {
         // CRITICAL FIX: Check if client still exists before processing each command
         if (_clients.find(client_fd) == _clients.end()) {
             return; // Client was removed, stop processing
