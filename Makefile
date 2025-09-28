@@ -29,29 +29,27 @@ CXXFLAGS_DCC = -Wall -Wextra -Werror -std=c++98
 
 # --- Main Rules ---
 
-# The 'all' rule is first, making it the default when running 'make'
-all: $(NAME) $(BOT_NAME) $(DCC_NAME)
+# The 'all' rule compiles only the mandatory part (server)
+all: $(NAME)
 
-server: $(NAME)
-
-# Rule to compile the server
+# Rule to compile the server (mandatory part)
 $(NAME): $(OBJS)
 	@echo "Compiling the IRC Server..."
 	$(CXX) $(CXXFLAGS_SERVER) -o $(NAME) $(OBJS)
 	@echo "Server $(NAME) compiled successfully."
 
-####################################
-# Regra para compilar o bot
+# --- Bonus Rules ---
+
+# The 'bonus' rule compiles the server + bot + dcc_client
+bonus: $(NAME) $(BOT_NAME) $(DCC_NAME)
+
+# Rule to compile the bot (bonus part)
 $(BOT_NAME): $(BOT_OBJS)
+	@echo "Compiling the Bot..."
 	$(CXX) $(CXXFLAGS_BOT) -o $(BOT_NAME) $(BOT_OBJS)
+	@echo "Bot $(BOT_NAME) compiled successfully."
 
-###############
-# Rule to compile the bot
-##$(BOT_NAME): $(BOT_OBJS)
-##	@echo "Compiling the Bot..."
-##	$(CXX) $(CXXFLAGS_BOT) -o $(BOT_NAME) $(BOT_OBJS) $(BOT_LIBS)
-##	@echo "Bot $(BOT_NAME) compiled successfully."
-
+# Rule to compile the DCC Client (bonus part)
 $(DCC_NAME): $(DCC_OBJS)
 	@echo "Compiling the DCC Client..."
 	$(CXX) $(CXXFLAGS_DCC) -o $(DCC_NAME) $(DCC_OBJS)
@@ -74,12 +72,16 @@ fclean: clean
 # The 're' rule performs a full cleanup and recompiles everything
 re: fclean all
 
+# The 'rebonus' rule performs a full cleanup and recompiles everything including bonus
+rebonus: fclean bonus
+
 # --- Debug Rule (Optional) ---
 # Allows compiling with debug flags, e.g., 'make debug'
 debug: CXXFLAGS_SERVER += -g
 debug: CXXFLAGS_BOT += -g
-debug: re
+debug: CXXFLAGS_DCC += -g
+debug: rebonus
 
 # --- Phony ---
 # Informs 'make' that these rules do not produce files with their names
-.PHONY: all clean fclean re debug
+.PHONY: all bonus clean fclean re rebonus debug
